@@ -3,7 +3,7 @@ import requests
 import json
 import time
 from fastapi import APIRouter, HTTPException
-from langchain_anthropic import ChatAnthropic
+
 from backend.agents.fund_screener_agent import fund_screener_agent
 from backend.agents.geopolitical_agent import geopolitical_agent
 from backend.agents.profiling_agent import profiling_agent
@@ -556,7 +556,13 @@ async def onboard_user(data: UserOnboarding):
 async def chat(data: dict):
     user_id = data.get("user_id", "demo_user")
     message = data.get("message", "")
-    return wealth_chat_agent.chat(user_id, message)
+    history = data.get("history", [])
+    
+    from fastapi.responses import StreamingResponse
+    return StreamingResponse(
+        wealth_chat_agent.stream_chat(user_id, message, history), 
+        media_type="text/event-stream"
+    )
 
 @router.get("/tax/analysis")
 async def tax_analysis(user_id: str = "demo_user"):

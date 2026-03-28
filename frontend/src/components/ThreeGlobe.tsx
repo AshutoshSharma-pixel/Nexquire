@@ -31,9 +31,10 @@ export default function ThreeGlobe() {
     // Wireframe grid
     const wireframe = new THREE.WireframeGeometry(geometry)
     const line = new THREE.LineSegments(wireframe)
-    line.material.transparent = true
-    line.material.opacity = 0.15
-    line.material.color.setHex(0x2D6FF7)
+    const lineMat = line.material as THREE.LineBasicMaterial
+    lineMat.transparent = true
+    lineMat.opacity = 0.15
+    lineMat.color.setHex(0x2D6FF7)
     scene.add(line)
 
     // Points/Nodes

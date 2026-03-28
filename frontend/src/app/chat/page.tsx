@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "framer-motion"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { Send, Sparkles, User, Bot, Loader2, ArrowRight, Shield, Zap } from "lucide-react"
+import { Send, Sparkles, User, Bot, Loader2, ArrowRight, Shield, Zap, Globe } from "lucide-react"
 import { api } from "@/lib/api"
 
 const TypingIndicator = () => (
