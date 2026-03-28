@@ -34,15 +34,21 @@ Nexquire is built on a high-performance, distributed architecture designed for l
 ## 💎 Core Features
 
 ### **1. Adaptive Onboarding & Risk Profiling**
-A high-fidelity 5-step wizard that assesses behavioral risk and generates a personalized investment blueprint using Gemini 2.0’s deep reasoning.
+A high-fidelity 5-step wizard that assesses behavioral risk and generates a personalized investment blueprint using Gemini's deep reasoning.
 
-### **2. Intelligence Command Center**
-A real-time "Rupee-impact" feed that translates global geopolitical events into specific portfolio adjustments.
+### **2. Strategic Command Hub (World Monitor)**
+A real-time, high-density **Multi-Vector Risk Command Center** that synthesizes global geopolitical nodes:
+- **Global Posture Monitoring**: Real-time status toggles (CRITICAL, WATCH, STABLE) for the EU, Middle East, Asia, US, and India desks.
+- **Maritime Chokepoint Tracking**: Live risk analysis of critical shipping lanes like the **Strait of Hormuz** and **Suez Canal**.
+- **Neural Confidence Index**: AI-driven reliability scores (0-100%) for geopolitical signal synthesis.
 
-### **3. Portfolio X-Ray & AI Rebalancing**
+### **3. Intelligence Alert Engine**
+An institutional-grade "Rupee-impact" feed that translates complex global events into specific portfolio adjustments, including **basis point (bps)** precision for macro-stress indicators like the **VIX Index** and **Yield Spreads**.
+
+### **4. Portfolio X-Ray & AI Rebalancing**
 Automated "Execute Action" flows that simplify asset allocation moves (e.g., Debt-to-Equity switches) with institutional precision.
 
-### **4. Wealth Chat API**
+### **5. Wealth Chat API**
 A context-aware AI conversational interface capable of answering complex portfolio-specific queries in plain English.
 
 ---
