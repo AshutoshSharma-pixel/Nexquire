@@ -1,0 +1,91 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", sans-serif;
+  
+  /* Strict White-Theme Series A Design Language */
+  --color-background: #FFFFFF;
+  --color-foreground: #000000;
+  
+  --color-card: #FFFFFF;
+  --color-card-foreground: #000000;
+  
+  --color-popover: #FFFFFF;
+  --color-popover-foreground: #000000;
+  
+  --color-primary: #000000;
+  --color-primary-foreground: #FFFFFF;
+  
+  --color-secondary: #F5F5F5;
+  --color-secondary-foreground: #666666;
+  
+  --color-muted: #E8E8E8;
+  --color-muted-foreground: #999999;
+  
+  --color-accent: #000000;
+  --color-accent-foreground: #FFFFFF;
+  
+  --color-destructive: #DC2626;
+  --color-destructive-foreground: #FFFFFF;
+  
+  --color-border: #E8E8E8;
+  --color-input: #E8E8E8;
+  --color-ring: #000000;
+  
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 4px;
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 0%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 0%;
+    --border: 0 0% 91%;
+    --input: 0 0% 91%;
+    --primary: 0 0% 0%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 40%;
+    --accent: 0 0% 0%;
+    --accent-foreground: 0 0% 100%;
+    --radius: 0.75rem;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans;
+    background: #FFFFFF;
+    color: #000000;
+  }
+
+  html {
+     scroll-behavior: smooth;
+  }
+
+  ::selection {
+    background: #000000;
+    color: #FFFFFF;
+  }
+}
+
+@layer utilities {
+  .hero-glow {
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(0,0,0,0.05), transparent);
+  }
+
+  .glass {
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+}
