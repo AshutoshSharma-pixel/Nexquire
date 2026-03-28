@@ -4,19 +4,319 @@ import React, { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { TrendingUp, AlertCircle, Bell, LayoutDashboard, Search, MessageSquare, Wallet, Zap, Clock, ArrowUpRight } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
+import { TrendingUp, AlertCircle, Bell, LayoutDashboard, Search, MessageSquare, Wallet, Zap, Clock, ArrowUpRight, Globe, Rss, ExternalLink, BarChart2, Layers, TrendingDown, Clock3, Trophy, SlidersHorizontal, ShieldCheck, Loader2 } from "lucide-react"
+import FundDetailModal from "@/components/modals/FundDetailModal"
+import MarketStatusBadge from "@/components/MarketStatusBadge"
 import { api } from "@/lib/api"
 import PortfolioChart from "@/components/charts/portfolio-chart"
+import { Input } from "@/components/ui/input"
 
-const DashboardView = ({ alerts, isRefreshing, isAnalyzing, isExecuting, handleRefresh, handleAnalyze, handleExecute }: any) => (
+const CHANNELS = [
+  { id: "iEpJwprxDdk", name: "Bloomberg Global", desc: "Global Financials" },
+  { id: "P857H4ej-MQ", name: "CNBC-TV18", desc: "India's #1 Business" },
+  { id: "LqiwumvMReo", name: "ET Now", desc: "Market Insights" },
+  { id: "1PM2u77DEPM", name: "Zee Business", desc: "Hindi Finance" },
+  { id: "9e4fXHLyc4U", name: "CNBC Awaaz", desc: "Hindi Markets" },
+  { id: "tPsetVg5te4", name: "NDTV Profit", desc: "IPO & Live Updates" },
+  { id: "gCNeDWCI0vo", name: "Al Jazeera", desc: "Global Markets" },
+]
+
+const LiveIntelligenceHub = ({ posture }: { posture: any }) => {
+  const [selectedChannel, setSelectedChannel] = useState(CHANNELS[0])
+  const data = posture || {
+    neural_confidence: 92.4,
+    postures: [
+      { region: "EU", impact: "STABLE", msg: "Strategic reserves offsetting energy volatility." },
+      { region: "ME", impact: "WATCH", msg: "Monitoring shipping lane insurance spikes." },
+      { region: "AS", impact: "WATCH", msg: "Semiconductor supply chain normalizing." }
+    ]
+  }
+
+  return (
+    <Card className="lg:col-span-3 border-accent/20 bg-accent/5 overflow-hidden border-2 shadow-2xl shadow-accent/5">
+      <div className="p-4 border-b border-accent/10 flex items-center justify-between bg-accent/10">
+        <div className="flex items-center gap-3">
+          <div className="w-2 h-2 rounded-full bg-destructive animate-pulse" />
+          <h3 className="text-sm font-bold tracking-widest uppercase text-accent-foreground">Strategic Command Hub</h3>
+        </div>
+        <div className="flex items-center gap-4 text-[10px] font-bold text-muted-foreground uppercase tracking-wider">
+          <span className="hidden md:inline">Global Desk: ACTIVE</span>
+          <Badge className="bg-accent/20 text-accent border-accent/30 lowercase font-mono">v2.4.1-live</Badge>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-5 aspect-video lg:aspect-[21/8]">
+        {/* Channel Selection Sidebar */}
+        <div className="bg-card/30 backdrop-blur-md border-r border-accent/10 p-2 hidden lg:flex flex-col gap-1 overflow-y-auto">
+          <div className="px-3 py-2 mb-2">
+             <span className="text-[8px] font-black text-muted-foreground uppercase tracking-[0.2em]">Broadcast Registry</span>
+          </div>
+          {CHANNELS.map((ch) => (
+            <button
+              key={ch.name}
+              onClick={() => setSelectedChannel(ch)}
+              className={`w-full text-left p-3 rounded-lg transition-all border ${
+                selectedChannel.name === ch.name 
+                  ? "bg-accent/20 border-accent/40 shadow-inner" 
+                  : "border-transparent hover:bg-white/5"
+              }`}
+            >
+              <div className="text-[10px] font-bold text-foreground truncate">{ch.name}</div>
+              <div className="text-[8px] text-muted-foreground truncate uppercase tracking-tighter opacity-60">{ch.desc}</div>
+            </button>
+          ))}
+        </div>
+
+        {/* Live Video Feed */}
+        <div className="lg:col-span-3 bg-black relative group">
+          <iframe 
+            key={selectedChannel.id}
+            className="w-full h-full"
+            src={`https://www.youtube.com/embed/${selectedChannel.id}?autoplay=1&mute=1&controls=0&showinfo=0&rel=0`}
+            title={selectedChannel.name}
+            frameBorder="0"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+            allowFullScreen
+          />
+          <div className="absolute top-4 left-4 pointer-events-none flex items-center gap-2">
+            <Badge className="bg-destructive text-destructive-foreground border-none px-3 py-1 text-xs animate-pulse">LIVE NEWS</Badge>
+            <Badge className="bg-black/60 backdrop-blur-md text-white/80 border-white/10 px-3 py-1 text-[10px] uppercase font-bold tracking-widest">{selectedChannel.name}</Badge>
+          </div>
+          <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-opacity bg-black/60 backdrop-blur-md p-3 rounded-xl border border-white/10">
+            <div className="flex items-center gap-3">
+               <span className="text-[10px] font-bold text-white tracking-widest uppercase">Source: {selectedChannel.desc}</span>
+            </div>
+            <div className="flex items-center gap-2">
+                <div className="flex gap-1 h-3 items-end">
+                   {[0.4, 0.7, 0.5, 0.9, 0.3].map((h, i) => (
+                     <motion.div key={i} animate={{ height: [`${h*100}%`, `${(1-h)*100}%`, `${h*100}%`] }} transition={{ repeat: Infinity, duration: 1 + i*0.2 }} className="w-0.5 bg-accent" />
+                   ))}
+                </div>
+                <span className="text-[9px] font-bold text-accent tracking-tighter uppercase ml-1">Signal Strength: 100%</span>
+            </div>
+          </div>
+        </div>
+        
+        {/* Global Situation Monitor */}
+        <div className="bg-card/50 backdrop-blur-xl border-l border-accent/10 p-6 flex flex-col gap-6 overflow-y-auto">
+        <div className="space-y-1">
+          <h4 className="text-[10px] font-bold text-accent uppercase tracking-widest flex items-center gap-2">
+             <Globe size={12} /> Strategic Posture
+          </h4>
+          <p className="text-[10px] text-muted-foreground font-medium leading-tight">Cross-referencing live feeds with portfolio risk-weights.</p>
+        </div>
+        
+        <div className="space-y-3">
+          {data.postures.map((item: any, i: number) => (
+            <div key={i} className="p-3 rounded-lg bg-muted/20 border border-border/50 flex flex-col gap-1">
+               <div className="flex items-center justify-between">
+                 <span className="text-[8px] font-bold text-foreground border border-border px-1 px-1 rounded uppercase tracking-tighter">{item.region}</span>
+                 <span className={`text-[8px] font-black uppercase tracking-widest ${
+                   item.impact === 'CRITICAL' ? 'text-destructive' : 
+                   item.impact === 'WATCH' ? 'text-warning' : 'text-success'
+                 }`}>{item.impact}</span>
+               </div>
+               <p className="text-[9px] text-muted-foreground leading-tight">{item.msg}</p>
+            </div>
+          ))}
+        </div>
+        
+        <div className="mt-auto pt-6 border-t border-accent/10">
+           <div className="flex items-center justify-between mb-3 text-[9px] font-bold text-muted-foreground uppercase tracking-widest">
+              <span>AI Sentiment</span>
+              <span className="text-accent">{data.neural_confidence}% Neural Confidence</span>
+           </div>
+           <div className="h-1 w-full bg-accent/10 rounded-full overflow-hidden">
+             <motion.div initial={{ width: 0 }} animate={{ width: `${data.neural_confidence}%` }} className="h-full bg-accent" />
+           </div>
+        </div>
+      </div>
+    </div>
+  </Card>
+)
+}
+
+const LiveNewsTicker = ({ articles }: { articles: any[] }) => {
+  const tickerRef = React.useRef<HTMLDivElement>(null)
+  const displayItems = articles.length > 0 ? [...articles, ...articles] : []
+
+  return (
+    <div className="lg:col-span-3 bg-card/50 border border-border/60 rounded-xl overflow-hidden relative">
+      <div className="flex items-center gap-3 px-4 py-2 border-b border-border/40 bg-muted/20">
+        <div className="flex items-center gap-2">
+          <div className="w-1.5 h-1.5 rounded-full bg-destructive animate-pulse" />
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] text-muted-foreground">Live Financial Headlines</span>
+        </div>
+        <div className="flex items-center gap-1.5 ml-auto">
+          <Rss size={10} className="text-muted-foreground" />
+          <span className="text-[8px] text-muted-foreground font-bold uppercase tracking-widest">ET · Moneycontrol · LiveMint · NDTV Profit · Business Standard</span>
+        </div>
+      </div>
+      <div className="relative overflow-hidden h-9">
+        {displayItems.length === 0 ? (
+          <div className="flex items-center h-full px-4">
+            <div className="h-2 w-48 bg-muted/40 rounded animate-pulse" />
+          </div>
+        ) : (
+          <motion.div
+            ref={tickerRef}
+            className="flex items-center gap-0 absolute whitespace-nowrap h-full"
+            animate={{ x: ["-0%", "-50%"] }}
+            transition={{ duration: displayItems.length * 6, repeat: Infinity, ease: "linear" }}
+          >
+            {displayItems.map((item, i) => (
+              <a
+                key={i}
+                href={item.link}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-3 px-6 text-xs font-medium text-foreground hover:text-primary transition-colors group shrink-0"
+              >
+                <span className="text-[8px] font-black text-muted-foreground uppercase tracking-widest border border-border px-1.5 py-0.5 rounded">{item.source}</span>
+                <span className="group-hover:underline">{item.title}</span>
+                <ExternalLink size={9} className="text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity" />
+                <span className="text-muted-foreground/30 ml-3">◆</span>
+              </a>
+            ))}
+          </motion.div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+const MARKET_TABS = ["Commodities", "ETFs", "Gainers", "Losers", "F&O"] as const
+
+const MarketDataHub = ({ data }: { data: any }) => {
+  const [activeTab, setActiveTab] = React.useState<string>("Commodities")
+  const prevPrices = React.useRef<Record<string, string>>({})
+  const [flashClasses, setFlashClasses] = React.useState<Record<string, string>>({})
+
+  const rows: any[] = React.useMemo(() => {
+    if (!data) return []
+    if (activeTab === "Commodities") return data.commodities || []
+    if (activeTab === "ETFs") return data.etfs || []
+    if (activeTab === "Gainers") return data.movers?.gainers || []
+    if (activeTab === "Losers") return data.movers?.losers || []
+    if (activeTab === "F&O") return data.fno || []
+    return []
+  }, [activeTab, data])
+
+  React.useEffect(() => {
+    if (!rows || rows.length === 0) return
+    const newClasses: Record<string, string> = {}
+    rows.forEach((item: any) => {
+      const sym = item.symbol || item.name
+      const currentStr = item.price
+      if (!currentStr || currentStr === "N/A") return
+      
+      const currentNum = parseFloat(currentStr.replace(/[^0-9.-]+/g, ""))
+      const prevStr = prevPrices.current[sym]
+      
+      if (prevStr) {
+        const prevNum = parseFloat(prevStr.replace(/[^0-9.-]+/g, ""))
+        if (currentNum > prevNum) {
+          newClasses[sym] = "price-up"
+        } else if (currentNum < prevNum) {
+          newClasses[sym] = "price-down"
+        }
+      }
+      prevPrices.current[sym] = currentStr
+    })
+    
+    if (Object.keys(newClasses).length > 0) {
+      setFlashClasses(newClasses)
+      setTimeout(() => setFlashClasses({}), 600)
+    }
+  }, [rows])
+
+  return (
+    <Card className="lg:col-span-3 border-border shadow-sm overflow-hidden">
+      <div className="flex items-center gap-0 border-b border-border bg-muted/10">
+        <div className="flex items-center gap-2 px-4 py-3 border-r border-border">
+          <BarChart2 size={14} className="text-muted-foreground" />
+          <span className="text-[9px] font-black uppercase tracking-[0.2em] text-muted-foreground">Market Data</span>
+        </div>
+        <div className="flex overflow-x-auto">
+          {MARKET_TABS.map(tab => (
+            <button
+              key={tab}
+              onClick={() => setActiveTab(tab)}
+              className={`px-5 py-3 text-[10px] font-bold uppercase tracking-widest border-b-2 transition-all whitespace-nowrap ${
+                activeTab === tab
+                  ? "border-primary text-primary bg-primary/5"
+                  : "border-transparent text-muted-foreground hover:text-foreground hover:bg-muted/20"
+              }`}
+            >
+              {tab === "Gainers" && <TrendingUp size={9} className="inline mr-1" />}
+              {tab === "Losers" && <TrendingDown size={9} className="inline mr-1" />}
+              {tab}
+            </button>
+          ))}
+        </div>
+        <div className="ml-auto px-4 scale-75 origin-right">
+          <MarketStatusBadge />
+        </div>
+      </div>
+      <div className="overflow-x-auto">
+        {rows.length === 0 ? (
+          <div className="flex gap-3 p-4">
+            {[1,2,3,4,5,6].map(i => (
+              <div key={i} className="h-16 w-36 rounded-xl bg-muted/20 animate-pulse flex-shrink-0" />
+            ))}
+          </div>
+        ) : (
+          <div className="flex gap-3 p-4 overflow-x-auto">
+            {rows.map((item: any, i: number) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 6 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: i * 0.04 }}
+                className={`flex-shrink-0 min-w-[130px] p-3 rounded-xl border border-border bg-card hover:border-primary/30 hover:shadow-md transition-all cursor-default ${flashClasses[item.symbol || item.name] || ""}`}
+              >
+                <div className="text-[9px] font-black text-muted-foreground uppercase tracking-wider mb-1 truncate">
+                  {item.symbol || item.name}
+                </div>
+                <div className="text-sm font-bold text-foreground mb-0.5 truncate">
+                  {item.price}
+                </div>
+                <div className={`text-[10px] font-bold ${item.color}`}>
+                  {item.change_pct}
+                  {item.unit && <span className="text-muted-foreground ml-1 font-normal">{item.unit}</span>}
+                </div>
+                {item.name && item.symbol && (
+                  <div className="text-[8px] text-muted-foreground truncate mt-0.5 opacity-70">{item.name}</div>
+                )}
+              </motion.div>
+            ))}
+          </div>
+        )}
+      </div>
+    </Card>
+  )
+}
+
+const DashboardView = ({ alerts, marketData, newsData, extMarketData, isRefreshing, isAnalyzing, isExecuting, handleRefresh, handleAnalyze, handleExecute, setActiveTab, geopoliticalPosture }: any) => (
   <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    {/* Live Intelligence Hub - Full Width Top Section */}
+    <LiveIntelligenceHub posture={geopoliticalPosture} />
+
+    {/* Live News Ticker */}
+    <LiveNewsTicker articles={newsData} />
+
+    {/* Market Data Hub: ETFs, Commodities, Movers, F&O */}
+    <MarketDataHub data={extMarketData} />
+
     {/* Portfolio Overview */}
     <Card className="lg:col-span-2 border-border shadow-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <CardTitle className="text-sm font-bold tracking-widest uppercase text-muted-foreground">Portfolio Overview</CardTitle>
-        <div className="flex flex-col items-end">
-          <div className="text-3xl font-bold tracking-tight text-foreground">
-            <CountUp end="1245000" />
+        <div className="space-y-1">
+          <CardTitle className="text-sm font-bold tracking-widest uppercase text-muted-foreground flex items-center gap-2">
+            <Wallet size={16} /> Total Balance
+          </CardTitle>
+          <div className="text-4xl font-black text-foreground tracking-tighter">
+            <CountUp end="₹12,45,000" />
           </div>
           <div className="text-xs text-success font-bold flex items-center gap-1">
             <TrendingUp size={12} /> +14.2% (XIRR)
@@ -90,65 +390,498 @@ const DashboardView = ({ alerts, isRefreshing, isAnalyzing, isExecuting, handleR
           <Badge className="bg-primary/10 text-primary border-primary/20">LIVE</Badge>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         {alerts.map((alert: any, idx: number) => (
           <motion.div 
             key={idx} 
-            whileHover={{ scale: 1.02 }}
-            className="p-4 rounded-xl bg-muted/30 border border-border flex gap-4 transition-all cursor-pointer hover:border-primary/40 relative overflow-hidden group"
+            whileHover={{ x: 4 }}
+            className="p-3 rounded-xl bg-muted/20 border border-border flex gap-3 transition-all cursor-pointer hover:border-primary/40 relative overflow-hidden group"
           >
-            <div className={`absolute left-0 top-0 bottom-0 w-1 ${alert.severity.includes("🔴") ? "bg-destructive" : "bg-warning"}`} />
-            <div className="text-xl mt-1">{alert.severity.includes("🔴") ? "🔴" : "🟡"}</div>
-            <div className="space-y-1">
-              <h4 className="font-bold text-sm text-foreground group-hover:text-primary transition-colors">{alert.title}</h4>
-              <p className="text-[11px] text-muted-foreground leading-relaxed">{alert.body}</p>
+            <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+              alert.severity.includes("🔴") ? "bg-destructive" : 
+              alert.severity.includes("🟠") ? "bg-orange-500" : 
+              alert.severity.includes("🟡") ? "bg-yellow-500" : "bg-blue-500"
+            }`} />
+            <div className="space-y-1.5 flex-1">
+              <div className="flex items-center justify-between">
+                <h4 className="font-black text-[10px] uppercase tracking-wider text-foreground group-hover:text-primary transition-colors flex items-center gap-1.5">
+                   <span className="text-xs">{alert.severity.split(" ")[0]}</span> {alert.title}
+                </h4>
+                <span className="text-[8px] font-bold text-muted-foreground uppercase opacity-60">{alert.time}</span>
+              </div>
+              <p className="text-[10px] text-muted-foreground leading-snug font-medium">{alert.body}</p>
+              
+              <div className="flex flex-wrap gap-1.5 pt-1">
+                {alert.sectors?.map((s: string) => (
+                  <Badge key={s} variant="outline" className="text-[7px] font-black uppercase tracking-tighter px-1.5 py-0 border-muted-foreground/20 text-muted-foreground">
+                    {s}
+                  </Badge>
+                ))}
+                <div className="ml-auto text-[8px] font-black text-primary uppercase tracking-widest flex items-center gap-1 group-hover:translate-x-1 transition-transform">
+                   {alert.action} <ArrowUpRight size={10} />
+                </div>
+              </div>
             </div>
           </motion.div>
         ))}
-        <Button variant="ghost" className="w-full text-primary hover:bg-primary/10 text-[10px] font-bold uppercase tracking-widest">View all 12 alerts</Button>
+        <Button onClick={() => setActiveTab("Intelligence Feed")} variant="ghost" className="w-full text-primary hover:bg-primary/10 text-[9px] font-black uppercase tracking-[0.2em] h-8 mt-1">
+          Open Strategic Command Hub ({alerts.length} Active)
+        </Button>
       </CardContent>
     </Card>
 
     {/* Market Pulse Ticker Style */}
     <Card className="lg:col-span-2 border-border shadow-sm">
       <CardHeader>
-        <CardTitle className="text-sm font-bold tracking-widest uppercase text-muted-foreground">Market Pulse</CardTitle>
+        <CardTitle className="text-sm font-bold tracking-widest uppercase text-muted-foreground">Market Pulse (Real-Time)</CardTitle>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-          {[
-            { label: "Nifty 50 PE", value: "23.4", trend: "High Value", color: "text-warning" },
-            { label: "FII Net Flow", value: "₹-4.2k Cr", trend: "Net Seller", color: "text-destructive" },
-            { label: "Market Vol.", value: "VIX 14.2", trend: "Stable", color: "text-success" },
-            { label: "India 10Y", value: "6.92%", trend: "Stable", color: "text-success" }
-          ].map((stat) => (
-            <div key={stat.label} className="p-4 rounded-xl bg-muted/20 border border-border text-center group hover:border-primary/20 transition-all">
+          {marketData.length > 0 ? marketData.map((stat: any) => (
+            <motion.div 
+              key={stat.label} 
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="p-4 rounded-xl bg-muted/20 border border-border text-center group hover:border-primary/20 transition-all"
+            >
               <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-2">{stat.label}</div>
-              <div className="text-xl font-bold text-foreground mb-1 group-hover:scale-110 transition-transform">{stat.value}</div>
+              <div className={`text-xl font-bold ${stat.color} mb-1 group-hover:scale-110 transition-transform`}>{stat.value}</div>
               <div className={`text-[10px] font-bold uppercase tracking-widest ${stat.color}`}>{stat.trend}</div>
-            </div>
-          ))}
+            </motion.div>
+          )) : (
+            [1, 2, 3, 4].map((i) => (
+                <div key={i} className="p-4 rounded-xl bg-muted/20 border border-border animate-pulse h-24" />
+            ))
+          )}
         </div>
       </CardContent>
     </Card>
   </div>
 )
 
-const MockView = ({ title }: { title: string }) => (
-  <Card className="border-border border-dashed bg-muted/5 flex flex-col items-center justify-center p-20 gap-4">
-    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
-      {title === "Fund Screener" && <Search size={32} />}
-      {title === "Portfolio X-Ray" && <Wallet size={32} />}
-      {title === "Intelligence Feed" && <Bell size={32} />}
-      {title === "AI Wealth Chat" && <MessageSquare size={32} />}
-      {title === "Tax Optimizer" && <Clock size={32} />}
+const IntelligenceView = ({ alerts }: any) => (
+  <div className="space-y-6 max-w-4xl mx-auto">
+    <div className="flex items-center justify-between mb-8">
+      <div>
+        <h2 className="text-2xl font-bold text-foreground">Intelligence Feed</h2>
+        <p className="text-muted-foreground text-sm">Real-time market signals and geopolitical risk indicators tailored to your holdings.</p>
+      </div>
+      <Badge className="bg-primary/10 text-primary border-primary/20 p-2 text-xs">{alerts.length} NEW SIGNALS</Badge>
     </div>
-    <div className="text-center space-y-1">
-      <h2 className="text-2xl font-bold text-foreground">{title}</h2>
-      <p className="text-muted-foreground max-w-sm">This module is currently being synchronized with your real-time portfolio data. Stay tuned for institutional-grade insights. 🚀</p>
+    
+    <div className="grid gap-4">
+      {alerts.map((alert: any, idx: number) => (
+        <motion.div 
+          key={idx}
+          initial={{ opacity: 0, x: -10 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: idx * 0.1 }}
+          className="p-6 rounded-2xl bg-card border border-border flex items-start gap-6 hover:shadow-xl hover:shadow-primary/5 transition-all group cursor-pointer"
+        >
+          <div className={`p-4 rounded-xl ${alert.severity.includes("🔴") ? "bg-destructive/10 text-destructive" : "bg-warning/10 text-warning"} text-2xl`}>
+             {alert.severity.includes("🔴") ? <AlertCircle size={28} /> : <Zap size={28} />}
+          </div>
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center justify-between">
+              <span className={`text-[10px] font-bold uppercase tracking-widest ${alert.severity.includes("🔴") ? "text-destructive" : "text-warning"}`}>{alert.severity}</span>
+              <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">2 MINS AGO</span>
+            </div>
+            <h3 className="text-xl font-bold text-foreground group-hover:text-primary transition-colors">{alert.title}</h3>
+            <p className="text-sm text-muted-foreground leading-relaxed">{alert.body} This signal is derived from real-time monitoring of geopolitical shifts and market PE ratios.</p>
+            <div className="pt-4 flex items-center gap-4">
+              <Button variant="outline" className="text-[10px] font-bold uppercase tracking-widest h-8 px-4 rounded-lg">View Detailed Analysis</Button>
+              <Button className="text-[10px] font-bold uppercase tracking-widest h-8 px-4 rounded-lg bg-foreground text-background">Assess Portfolio Impact</Button>
+            </div>
+          </div>
+        </motion.div>
+      ))}
+      {alerts.length === 0 && (
+        <div className="p-6 rounded-2xl bg-muted/5 border border-border border-dashed flex items-center justify-center h-32 opacity-50">
+           <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">No active signals at this moment</p>
+        </div>
+      )}
     </div>
-    <Button variant="outline" className="mt-4 font-bold rounded-xl">Back to Dashboard</Button>
-  </Card>
+  </div>
+)
+
+const categoryMapping: Record<string, string> = {
+  "Small Cap": "small_cap",
+  "Mid Cap": "mid_cap",
+  "Large Cap": "large_cap",
+  "Flexi Cap": "flexi_cap",
+  "ELSS": "elss",
+  "Debt": "debt",
+  "Index": "index",
+  "Gold & Silver": "gold_silver",
+  "Commodities": "commodities"
+}
+
+const loadingMessages = [
+  "Scanning 44 AMCs...",
+  "Calculating real-time returns...",
+  "Running Gemini AI analysis...",
+  "Ranking top performers...",
+  "Almost ready..."
+]
+
+const ScoreBar = ({ label, value, color }: { label: string, value: number, color: string }) => (
+  <div className="space-y-1">
+    <div className="flex justify-between text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+      <span>{label}</span>
+      <span style={{ color }}>{value}%</span>
+    </div>
+    <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden border border-white/5">
+      <motion.div 
+        initial={{ width: 0 }}
+        whileInView={{ width: `${value}%` }}
+        transition={{ duration: 1, ease: "easeOut" }}
+        className="h-full rounded-full"
+        style={{ backgroundColor: color }}
+      />
+    </div>
+  </div>
+)
+
+const FundScreenerView = () => {
+  const [selectedCategory, setSelectedCategory] = useState("Large Cap")
+  const [timeframe, setTimeframe] = useState("1Y")
+  const [funds, setFunds] = useState<any[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [msgIndex, setMsgIndex] = useState(0)
+  const [selectedFund, setSelectedFund] = useState<any>(null)
+
+  const categories = ["Small Cap", "Mid Cap", "Large Cap", "Flexi Cap", "ELSS", "Debt", "Index", "Gold & Silver", "Commodities"]
+
+  // Rotating loading messages
+  useEffect(() => {
+    let interval: NodeJS.Timeout
+    if (isLoading) {
+      interval = setInterval(() => {
+        setMsgIndex((prev) => (prev + 1) % loadingMessages.length)
+      }, 1500)
+    }
+    return () => clearInterval(interval)
+  }, [isLoading])
+
+  const fetchFunds = async (cat: string, tf: string, retryCount = 0) => {
+    setIsLoading(true)
+    setError(null)
+    
+    // Using AbortController and timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000)
+
+    try {
+      const backendCat = categoryMapping[cat] || "large_cap"
+      // Use the api utility correctly
+      const data = await api.getFunds(backendCat, tf)
+      
+      clearTimeout(timeoutId)
+
+      if (data.success && data.funds) {
+        const mappedFunds = data.funds.map((f: any, idx: number) => ({
+          ...f,
+          name: f.scheme_name,
+          fund_house: f.fund_house,
+          score: f.score,
+          period_return: f.period_return ?? f.one_yr_return ?? f.tf_return ?? f.cagr_1y ?? 0,
+          expense: f.expense_ratio ?? f.expense ?? 0,
+          sharpe: f.sharpe_ratio ?? f.sharpe ?? 0,
+          aum: f.aum_cr ?? f.aum ?? 0,
+          tags: [f.risk_level, ...(f.ai_reason ? [f.ai_reason] : [])],
+          flags: f.risk_flags || [],
+          rank: idx + 1,
+          color: idx === 0 ? "#000000" : idx < 3 ? "#444444" : "#888888"
+        }))
+        setFunds(mappedFunds)
+        setIsLoading(false)
+      } else {
+        throw new Error(data.error || "Failed to fetch funds")
+      }
+    } catch (err: any) {
+      if (err.name === 'AbortError' || retryCount < 2) {
+        setError("Backend is warming up. Retrying...")
+        setTimeout(() => fetchFunds(cat, tf, retryCount + 1), 3000)
+      } else {
+        setError("Unable to scan AMCs at this moment. Please try again later.")
+        setIsLoading(false)
+      }
+    }
+  }
+
+  useEffect(() => {
+    fetchFunds(selectedCategory, timeframe)
+  }, [selectedCategory, timeframe])
+
+  return (
+    <div className="space-y-10">
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-8">
+        <div>
+          <h2 className="text-4xl font-black tracking-tight text-[#000] leading-tight flex items-center gap-4">
+            Fund Screener
+          </h2>
+          <p className="text-[#999] text-xs mt-1 font-medium italic">
+            Mutual Fund NAVs update once daily at 9:00 PM IST per SEBI regulations · Prices & ETFs update every 60s
+          </p>
+          <div className="flex items-center gap-4 mt-4">
+            <p className="text-muted-foreground text-sm font-bold">Ranked across 1,500+ funds from all 44 AMCs.</p>
+            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-success/10 border border-success/20">
+              <div className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" />
+              <span className="text-[10px] font-bold text-success uppercase tracking-wider">Synced: {new Date().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-wrap gap-3">
+           <div className="flex bg-[#F5F5F5] p-1 rounded-xl border border-[#E8E8E8]">
+              {["1M", "1Y", "3Y", "5Y"].map(tf => (
+                <button
+                  key={tf}
+                  onClick={() => setTimeframe(tf)}
+                  className={`px-4 py-1.5 rounded-lg text-[10px] font-bold transition-all ${
+                    timeframe === tf ? "bg-primary text-white" : "text-[#666] hover:text-[#000]"
+                  }`}
+                >
+                  {tf}
+                </button>
+              ))}
+           </div>
+          <div className="relative md:w-64">
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#999]" />
+            <Input className="pl-12 h-12 bg-[#F9F9F9] border-[#E8E8E8] rounded-xl focus:border-primary/50 transition-all text-[#000]" placeholder="Search funds..." />
+          </div>
+        </div>
+      </header>
+
+      {/* Category Tabs */}
+      <div className="flex overflow-x-auto gap-3 pb-4 scrollbar-hide">
+        {categories.map((cat) => (
+          <button
+            key={cat}
+            onClick={() => setSelectedCategory(cat)}
+            className={`px-6 py-2.5 rounded-full text-[11px] font-bold uppercase tracking-widest whitespace-nowrap transition-all ${
+              selectedCategory === cat 
+                ? "bg-primary text-white shadow-[0_0_20px_rgba(45,111,247,0.4)] border-primary" 
+                : "bg-[#F5F5F5] text-[#666] border border-[#E8E8E8] hover:bg-[#E8E8E8] hover:text-[#000]"
+            }`}
+          >
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 relative min-h-[400px]">
+        <AnimatePresence mode="wait">
+          {isLoading ? (
+            <motion.div 
+              key="loading"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-x-0 top-20 flex flex-col items-center justify-center text-center space-y-6"
+            >
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 border-4 border-primary/20 rounded-full" />
+                <motion.div 
+                  className="absolute inset-0 border-4 border-primary border-t-transparent rounded-full"
+                  animate={{ rotate: 360 }}
+                  transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+                />
+              </div>
+              <div className="space-y-2">
+                <AnimatePresence mode="wait">
+                  <motion.p 
+                    key={msgIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    className="text-xl font-bold text-white"
+                  >
+                    {loadingMessages[msgIndex]}
+                  </motion.p>
+                </AnimatePresence>
+                {error && <p className="text-warning text-sm font-medium animate-pulse">{error}</p>}
+              </div>
+            </motion.div>
+          ) : (
+            <motion.div 
+              key="results"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              className="grid grid-cols-1 gap-6"
+            >
+              {funds.length === 0 ? (
+                <div className="p-12 text-center text-muted-foreground border border-white/5 border-dashed rounded-2xl">
+                   No funds found for this selection.
+                </div>
+              ) : (
+                funds.map((fund, idx) => (
+                  <motion.div
+                    key={fund.scheme_code || fund.name}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: idx * 0.05 }}
+                    onClick={() => setSelectedFund(fund)}
+                    layout
+                  >
+                    <div style={{
+                      background: '#fff',
+                      border: '1px solid #E8E8E8',
+                      borderRadius: '16px',
+                      padding: '20px 24px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '24px',
+                      transition: 'all 0.2s ease',
+                      cursor: 'pointer'
+                    }} className="hover:border-primary/40 hover:shadow-lg group">
+                      {/* Rank Circle */}
+                      <div style={{
+                        width: 40,
+                        height: 40,
+                        borderRadius: '50%',
+                        background: idx === 0 ? '#000' : idx < 3 ? '#444' : '#F5F5F5',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        color: idx < 3 ? '#fff' : '#888',
+                        fontSize: 14,
+                        fontWeight: 900,
+                        flexShrink: 0
+                      }}>
+                        {fund.rank}
+                      </div>
+
+                      {/* Fund Info */}
+                      <div className="flex-1 min-w-0">
+                        <h3 style={{
+                          color: '#000',
+                          fontSize: '15px',
+                          fontWeight: 700,
+                          margin: 0,
+                          lineHeight: 1.2
+                        }}>
+                          {fund.name}
+                        </h3>
+                        <div style={{ 
+                          color: '#999', 
+                          fontSize: '11px', 
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.05em',
+                          marginTop: '4px'
+                        }}>
+                          {fund.fund_house}
+                        </div>
+                        <p style={{
+                          color: '#555',
+                          fontSize: '12px',
+                          fontStyle: 'italic',
+                          marginTop: '8px',
+                          lineHeight: 1.4
+                        }}>
+                          {fund.ai_reason}
+                        </p>
+                      </div>
+
+                      {/* Metrics 2x2 Grid */}
+                      <div className="hidden md:grid grid-cols-2 gap-x-10 gap-y-4 min-w-[280px]">
+                        <div className="flex flex-col">
+                          <span style={{ fontSize: 9, color: '#999', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>1Y Return</span>
+                          <span style={{ 
+                            color: (fund.period_return || 0) >= 0 ? '#16A34A' : '#DC2626', 
+                            fontSize: 16, 
+                            fontWeight: 800 
+                          }}>
+                            {(fund.period_return || 0) >= 0 ? '+' : ''}{(fund.period_return || 0).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span style={{ fontSize: 9, color: '#999', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Expense</span>
+                          <span style={{ color: '#000', fontSize: 16, fontWeight: 800 }}>
+                            {(fund.expense || 0).toFixed(2)}%
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span style={{ fontSize: 9, color: '#999', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>Sharpe</span>
+                          <span style={{ color: '#000', fontSize: 16, fontWeight: 800 }}>
+                            {(fund.sharpe || 0).toFixed(2)}
+                          </span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span style={{ fontSize: 9, color: '#999', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em' }}>AUM</span>
+                          <span style={{ color: '#000', fontSize: 16, fontWeight: 800 }}>
+                            ₹{(fund.aum || 0).toLocaleString('en-IN')} Cr
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Score Circle */}
+                      <div style={{
+                        width: 52,
+                        height: 52,
+                        borderRadius: '50%',
+                        border: '3px solid #F0F0F0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                        position: 'relative'
+                      }}>
+                        <span style={{ fontSize: 16, fontWeight: 900, color: '#000' }}>{fund.score}</span>
+                        <div style={{
+                          position: 'absolute',
+                          bottom: -15,
+                          fontSize: 8,
+                          fontWeight: 900,
+                          color: '#999',
+                          textTransform: 'uppercase'
+                        }}>Score</div>
+                      </div>
+
+                      {/* Chevron */}
+                      <div className="text-muted-foreground/30 group-hover:text-primary transition-colors">
+                        <ArrowUpRight size={20} />
+                      </div>
+                    </div>
+                  </motion.div>
+                )
+              ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <FundDetailModal 
+        isOpen={selectedFund !== null} 
+        onClose={() => setSelectedFund(null)} 
+        fund={selectedFund} 
+      />
+    </div>
+  )
+}
+
+const MockView = ({ title, alerts }: any) => (
+  <>
+    {title.trim() === "Intelligence Feed" ? (
+      <IntelligenceView alerts={alerts} />
+    ) : title.trim() === "Fund Screener" ? (
+      <FundScreenerView />
+    ) : (
+      <Card className="border-border border-dashed bg-muted/5 flex flex-col items-center justify-center p-20 gap-4">
+        <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+          {title === "Portfolio X-Ray" && <Wallet size={32} />}
+          {title === "AI Wealth Chat" && <MessageSquare size={32} />}
+          {title === "Tax Optimizer" && <Clock size={32} />}
+        </div>
+        <div className="text-center space-y-1">
+          <h2 className="text-2xl font-bold text-foreground">{title}</h2>
+          <p className="text-muted-foreground max-w-sm">This module is currently being synchronized with your real-time portfolio data. Stay tuned for institutional-grade insights. 🚀</p>
+        </div>
+        <Button variant="outline" onClick={() => window.location.reload()} className="mt-4 font-bold rounded-xl">Refresh View</Button>
+      </Card>
+    )}
+  </>
 )
 
 const CountUp = ({ end }: { end: string }) => {
@@ -175,12 +908,132 @@ const CountUp = ({ end }: { end: string }) => {
   return <span>₹{count.toLocaleString()}</span>
 }
 
+const MarketClosedBanner = () => {
+  const [status, setStatus] = useState<any>(null)
+  const [countdown, setCountdown] = useState('')
+  const [dismissed, setDismissed] = useState(false)
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const data = await api.getMarketStatus()
+        setStatus(data)
+      } catch (e) {
+        console.error(e)
+      }
+    }
+    fetchStatus()
+    const interval = setInterval(fetchStatus, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  useEffect(() => {
+    if (!status?.next_open) return
+    const interval = setInterval(() => {
+      const diff = new Date(status.next_open).getTime() - new Date().getTime()
+      if (diff <= 0) {
+        setCountdown('Opening soon')
+        return
+      }
+      const h = Math.floor(diff / (1000 * 60 * 60))
+      const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60))
+      const s = Math.floor((diff % (1000 * 60)) / 1000)
+      setCountdown(`in ${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`)
+    }, 1000)
+    return () => clearInterval(interval)
+  }, [status?.next_open])
+
+  if (dismissed || !status || status.is_open || status.is_pre_market) return null
+
+  const isWeekend = status.day === 'Saturday' || status.day === 'Sunday'
+  const rightText = isWeekend ? "Opens Monday 9:15 AM IST" : "Opens tomorrow 9:15 AM IST"
+
+  return (
+    <div style={{
+      background: '#FFFBEB',
+      border: '1px solid #FDE68A',
+      borderRadius: '10px',
+      padding: '12px 20px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: '24px'
+    }}>
+      <div style={{ fontSize: '14px', fontWeight: 600, color: '#B45309' }}>
+        🔔 NSE & BSE are currently closed
+      </div>
+      <div className="flex items-center gap-4">
+        <div style={{ fontSize: '13px', color: '#D97706' }}>
+          {rightText} <span className="font-bold ml-1">{countdown}</span>
+        </div>
+        <button onClick={() => setDismissed(true)} className="text-[#B45309] hover:bg-[#FDE68A] p-1 rounded-full transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function Dashboard() {
   const [alerts, setAlerts] = useState<any[]>([])
   const [activeTab, setActiveTab] = useState("Dashboard")
+  const [marketData, setMarketData] = useState<any[]>([])
+  const [newsData, setNewsData] = useState<any[]>([])
+  const [extMarketData, setExtMarketData] = useState<any>(null)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [isExecuting, setIsExecuting] = useState(false)
+  const [marketStatus, setMarketStatus] = useState<any>(null)
+  const [geopoliticalPosture, setGeopoliticalPosture] = useState<any>(null)
+
+  useEffect(() => {
+    api.getMarketStatus().then(setMarketStatus).catch(() => {})
+    api.getGeopoliticalPosture().then(setGeopoliticalPosture).catch(() => {})
+  }, [])
+
+  // Real-time Market Pulse Polling
+  useEffect(() => {
+    const fetchMarketData = () => {
+      api.getMarketPulse().then(data => {
+        if (data) setMarketData(data)
+      }).catch(() => {
+        setMarketData([
+          { label: "Nifty 50", value: "₹22,453.20", trend: "+0.12%", color: "text-success" },
+          { label: "Sensex", value: "₹74,123.50", trend: "+0.08%", color: "text-success" },
+          { label: "FII Net Flow", value: "₹-4.2k Cr", trend: "Net Seller", color: "text-destructive" },
+          { label: "India 10Y", value: "6.92%", trend: "Stable", color: "text-success" }
+        ])
+      })
+    }
+    
+    fetchMarketData()
+    const interval = setInterval(fetchMarketData, 30000) // 30s — matches backend cache
+    return () => clearInterval(interval)
+  }, [])
+
+  // Live News Polling — every 2 minutes
+  useEffect(() => {
+    const fetchNews = () => {
+      api.getLiveNews().then((data: any) => {
+        if (data?.articles?.length > 0) setNewsData(data.articles)
+      }).catch(() => {})
+    }
+    fetchNews()
+    const interval = setInterval(fetchNews, 120000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Extended Market Data — ETFs, Commodities, Movers, F&O — every 60s
+  useEffect(() => {
+    const fetchExt = () => {
+      api.getMarketData().then((data: any) => {
+        if (data) setExtMarketData(data)
+      }).catch(() => {})
+    }
+    fetchExt()
+    const interval = setInterval(fetchExt, 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   useEffect(() => {
     api.getAlerts().then(data => {
@@ -254,9 +1107,20 @@ export default function Dashboard() {
         <header className="flex items-center justify-between">
           <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
             <h1 className="text-3xl font-bold tracking-tight text-foreground">{activeTab}</h1>
-            <p className="text-muted-foreground">Welcome back, Ashutosh. Market is <span className="text-success font-bold">Steady</span>.</p>
+            <div className="flex items-center gap-2 mt-1">
+               <p className="text-muted-foreground text-sm">Welcome back, Ashutosh. Market is</p>
+               <span className={`text-xs font-black uppercase tracking-[0.15em] px-2 py-0.5 rounded border transition-all ${
+                 marketStatus?.status === 'open' ? 'bg-success/10 text-success border-success/30' : 
+                 marketStatus?.status === 'closed' ? 'bg-red-500/10 text-red-600 border-red-500/30' : 
+                 marketStatus?.status === 'pre_market' ? 'bg-amber-500/10 text-amber-600 border-amber-500/30' : 
+                 'bg-muted text-muted-foreground border-border'
+               }`}>
+                 {marketStatus?.status || "Analyzing"}
+               </span>
+            </div>
           </motion.div>
           <div className="flex items-center gap-4">
+            <MarketStatusBadge />
             <Button 
               disabled={isRefreshing}
               onClick={handleRefresh}
@@ -269,6 +1133,8 @@ export default function Dashboard() {
           </div>
         </header>
 
+        <MarketClosedBanner />
+
         <AnimatePresence mode="wait">
           <motion.div
             key={activeTab}
@@ -280,15 +1146,22 @@ export default function Dashboard() {
             {activeTab === "Dashboard" ? (
               <DashboardView 
                 alerts={alerts}
+                marketData={marketData}
+                newsData={newsData}
+                extMarketData={extMarketData}
                 isRefreshing={isRefreshing}
                 isAnalyzing={isAnalyzing}
                 isExecuting={isExecuting}
                 handleRefresh={handleRefresh}
                 handleAnalyze={handleAnalyze}
                 handleExecute={handleExecute}
+                setActiveTab={setActiveTab}
+                geopoliticalPosture={geopoliticalPosture}
               />
+            ) : activeTab === "Fund Screener" ? (
+              <FundScreenerView />
             ) : (
-              <MockView title={activeTab} />
+              <MockView title={activeTab} alerts={alerts} />
             )}
           </motion.div>
         </AnimatePresence>
@@ -297,6 +1170,3 @@ export default function Dashboard() {
   )
 }
 
-function Badge({ children, className }: { children: React.ReactNode, className?: string }) {
-  return <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold border ${className}`}>{children}</span>
-}
