@@ -2,9 +2,6 @@ fastapi
 uvicorn[standard]
 firebase-admin
 langchain
-langchain-anthropic
-crewai
-anthropic
 celery
 redis
 pydantic
