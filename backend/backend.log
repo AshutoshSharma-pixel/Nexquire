@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/Users/ashutoshsharma/Desktop/Nexquire/backend/main.py", line 8, in <module>
+    from backend.routers import auth, onboarding, portfolio, ai_services, market_news, market_data, portfolio_xray
+ModuleNotFoundError: No module named 'backend'

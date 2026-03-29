@@ -5,14 +5,15 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-from backend.routers import auth, onboarding, portfolio, ai_services, market_news, market_data
+from backend.routers import auth, onboarding, portfolio, ai_services, market_news, market_data, portfolio_xray
 
 app = FastAPI(title="Nexquire API", description="India's first age-aware, market-aware, and geopolitically intelligent investment advisor")
 
 # Register Routers
 app.include_router(auth.router, prefix="/api/auth", tags=["auth"])
 app.include_router(onboarding.router, prefix="/api/onboarding", tags=["onboarding"])
-app.include_router(portfolio.router, prefix="/api/portfolio", tags=["portfolio"])
+app.include_router(portfolio.router, prefix="/api/portfolio/legacy", tags=["portfolio"])
+app.include_router(portfolio_xray.router, prefix="/api/portfolio", tags=["xray"])
 app.include_router(ai_services.router, prefix="/api/ai", tags=["ai"])
 app.include_router(market_news.router, prefix="/api/news", tags=["news"])
 app.include_router(market_data.router, prefix="/api/market", tags=["market"])

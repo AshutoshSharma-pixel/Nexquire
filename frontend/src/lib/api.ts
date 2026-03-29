@@ -73,5 +73,48 @@ export const api = {
   getGeopoliticalPosture: async () => {
     const res = await fetch(`${API_URL}/api/ai/geopolitical-posture`)
     return res.json()
+  },
+  
+  // Portfolio X-Ray
+  uploadCams: async (file: File) => {
+    const formData = new FormData()
+    formData.append("file", file)
+    const res = await fetch(`${API_URL}/api/portfolio/upload-cams`, {
+      method: "POST",
+      body: formData,
+    })
+    return res.json()
+  },
+
+  manualEntry: async (holdings: any[]) => {
+    const res = await fetch(`${API_URL}/api/portfolio/manual-entry`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ holdings }),
+    })
+    return res.json()
+  },
+
+  searchFund: async (q: string) => {
+    const res = await fetch(`${API_URL}/api/portfolio/search-fund?q=${q}`)
+    return res.json()
+  },
+
+  liveValuation: async (holdings: any[]) => {
+    const res = await fetch(`${API_URL}/api/portfolio/live-valuation`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ holdings }),
+    })
+    return res.json()
+  },
+
+  analyzePortfolio: async (holdings: any[], userProfile: any) => {
+    const res = await fetch(`${API_URL}/api/portfolio/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ holdings, user_profile: userProfile }),
+    })
+    return res.json()
   }
 }
