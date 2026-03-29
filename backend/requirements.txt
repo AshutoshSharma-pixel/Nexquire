@@ -2,8 +2,6 @@ fastapi
 uvicorn[standard]
 firebase-admin
 langchain
-crewai
-anthropic
 celery
 redis
 pydantic
@@ -20,3 +18,5 @@ passlib[bcrypt]
 newsapi-python
 alpha-vantage
 langchain-google-genai
+google-generativeai
+pytz
