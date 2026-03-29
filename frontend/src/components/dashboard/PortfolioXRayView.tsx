@@ -15,11 +15,11 @@ import { api } from "@/lib/api"
 import { toast } from "sonner"
 
 const DEMO_PORTFOLIO = [
-  { fund_name: "HDFC Top 100 Fund Regular Growth", scheme_code: "119598", units: 245.67, amount_invested: 120000, purchase_date: "2022-01-15", category: "Large Cap" },
-  { fund_name: "Axis Bluechip Fund Regular Growth", scheme_code: "120465", units: 198.43, amount_invested: 80000, purchase_date: "2022-03-10", category: "Large Cap" },
-  { fund_name: "SBI Small Cap Fund Direct Growth", scheme_code: "125497", units: 89.21, amount_invested: 60000, purchase_date: "2021-06-20", category: "Small Cap" },
-  { fund_name: "Mirae Asset Emerging Bluechip Regular", scheme_code: "118989", units: 312.54, amount_invested: 50000, purchase_date: "2022-08-01", category: "Mid Cap" },
-  { fund_name: "ICICI Pru Value Discovery Fund Regular", scheme_code: "120701", units: 156.78, amount_invested: 40000, purchase_date: "2023-02-14", category: "Value" }
+  { fund_name: "HDFC Top 100 Fund Regular Growth", scheme_code: "119598", units: 245.67, amount_invested: 72000, purchase_date: "2020-01-15", category: "Large Cap" },
+  { fund_name: "Axis Bluechip Fund Regular Growth", scheme_code: "120465", units: 198.43, amount_invested: 48000, purchase_date: "2020-06-10", category: "Large Cap" },
+  { fund_name: "SBI Small Cap Fund Direct Growth", scheme_code: "125497", units: 89.21, amount_invested: 36000, purchase_date: "2019-06-20", category: "Small Cap" },
+  { fund_name: "Mirae Asset Emerging Bluechip Regular", scheme_code: "118989", units: 312.54, amount_invested: 30000, purchase_date: "2020-08-01", category: "Mid Cap" },
+  { fund_name: "ICICI Pru Value Discovery Fund Regular", scheme_code: "120701", units: 156.78, amount_invested: 24000, purchase_date: "2021-02-14", category: "Value" }
 ]
 
 const loadingMessages = [
@@ -628,29 +628,70 @@ export default function PortfolioXRayView() {
                 <p className="text-xs text-gray-400">Simulated portfolio loss under 4 crash scenarios</p>
               </div>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-                {Object.entries(analysis.stress_test).map(([key, s]: any) => (
-                  <div key={key} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 hover:border-gray-300 hover:shadow-sm transition-all">
-                    <p className="text-xs font-semibold text-gray-500 leading-snug h-8 flex items-start">{s.scenario}</p>
-                    <div>
-                      <p className={`text-2xl font-bold font-mono tabular-nums ${s.estimated_loss >= 0 ? "text-red-500" : "text-emerald-500"}`}>
-                        {s.estimated_loss >= 0 ? "−" : "+"}₹{Math.abs(s.estimated_loss).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-gray-400 mt-0.5">Estimated impact</p>
-                    </div>
-                    <div>
-                      <div className="flex items-center gap-2 mb-1.5">
-                        <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
-                          <motion.div className={`h-full rounded-full ${s.portfolio_impact_pct > 15 ? "bg-red-400" : "bg-amber-400"}`}
-                            initial={{ width: 0 }} whileInView={{ width: `${Math.min(s.portfolio_impact_pct, 100)}%` }}
-                            transition={{ duration: 0.8 }}
-                          />
-                        </div>
-                        <span className="text-xs font-bold font-mono text-gray-600">{s.portfolio_impact_pct}%</span>
+                {Object.entries(analysis.stress_test).map(([key, s]: any) => {
+                  const rawLoss = s.estimated_loss
+                  const isNaN_ = typeof rawLoss !== "number" || isNaN(rawLoss)
+                  const isZero = !isNaN_ && rawLoss === 0
+                  const isRupeeScenario = key === "rupee_depreciation" || s.scenario?.toLowerCase().includes("rupee")
+                  const isRbiScenario = key === "rbi_rate_hike" || s.scenario?.toLowerCase().includes("rbi")
+
+                  let displayAmount = ""
+                  let displayColor = "text-red-500"
+                  let displayPrefix = "−"
+                  let specialNote = ""
+
+                  if (isNaN_ && isRupeeScenario) {
+                    displayAmount = "₹0"
+                    displayColor = "text-gray-400"
+                    displayPrefix = ""
+                    specialNote = "No international fund exposure — neutral impact"
+                  } else if (isZero && isRbiScenario) {
+                    displayAmount = "₹0"
+                    displayColor = "text-gray-400"
+                    displayPrefix = ""
+                    specialNote = "No debt funds detected — neutral impact"
+                  } else if (isNaN_) {
+                    displayAmount = "₹0"
+                    displayColor = "text-gray-400"
+                    displayPrefix = ""
+                  } else if (rawLoss < 0) {
+                    displayAmount = `₹${Math.abs(rawLoss).toLocaleString()}`
+                    displayColor = "text-emerald-500"
+                    displayPrefix = "+"
+                  } else {
+                    displayAmount = `₹${rawLoss.toLocaleString()}`
+                    displayColor = "text-red-500"
+                    displayPrefix = "−"
+                  }
+
+                  const impactPct = isNaN(s.portfolio_impact_pct) ? 0 : (s.portfolio_impact_pct || 0)
+
+                  return (
+                    <div key={key} className="bg-white border border-gray-200 rounded-xl p-5 space-y-4 hover:border-gray-300 hover:shadow-sm transition-all">
+                      <p className="text-xs font-semibold text-gray-500 leading-snug h-8 flex items-start">{s.scenario}</p>
+                      <div>
+                        <p className={`text-2xl font-bold font-mono tabular-nums ${displayColor}`}>
+                          {displayPrefix}{displayAmount}
+                        </p>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {specialNote || "Estimated impact"}
+                        </p>
                       </div>
+                      <div>
+                        <div className="flex items-center gap-2 mb-1.5">
+                          <div className="flex-1 h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                            <motion.div className={`h-full rounded-full ${impactPct > 15 ? "bg-red-400" : impactPct === 0 ? "bg-gray-200" : "bg-amber-400"}`}
+                              initial={{ width: 0 }} whileInView={{ width: `${Math.min(impactPct, 100)}%` }}
+                              transition={{ duration: 0.8 }}
+                            />
+                          </div>
+                          <span className="text-xs font-bold font-mono text-gray-600">{impactPct}%</span>
+                        </div>
+                      </div>
+                      <p className="text-xs text-gray-400 leading-relaxed border-t border-gray-50 pt-3">{s.recovery_outlook}</p>
                     </div>
-                    <p className="text-xs text-gray-400 leading-relaxed border-t border-gray-50 pt-3">{s.recovery_outlook}</p>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
 
@@ -725,6 +766,25 @@ export default function PortfolioXRayView() {
                 </div>
               </div>
             )}
+            {/* ── WhatsApp Share ── */}
+            <div className="flex items-center justify-between bg-gray-900 rounded-2xl px-7 py-5">
+              <div>
+                <p className="text-sm font-bold text-white">Share Your Audit Report</p>
+                <p className="text-xs text-gray-400 mt-0.5">Send your portfolio grade to a friend or advisor via WhatsApp</p>
+              </div>
+              <a
+                href={`https://wa.me/?text=${encodeURIComponent(`My Nexquire Portfolio Report: Grade ${analysis?.ai_analysis?.grade || 'B'} | Value ₹${(liveValuation?.total_current || analysis?.portfolio?.total_current || 0).toLocaleString()} | XIRR ${analysis?.portfolio?.xirr || 0}% | Get your free analysis at nexquire.ai`)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2.5 bg-[#25D366] text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[#1fba59] transition-all shadow-sm shrink-0"
+              >
+                <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/>
+                  <path d="M12 0C5.373 0 0 5.373 0 12c0 2.127.558 4.126 1.532 5.86L.057 23.082a.75.75 0 00.921.921l5.222-1.475A11.952 11.952 0 0012 24c6.627 0 12-5.373 12-12S18.627 0 12 0zm0 21.75a9.725 9.725 0 01-4.929-1.337l-.355-.21-3.676 1.038 1.038-3.676-.21-.355A9.725 9.725 0 012.25 12C2.25 6.615 6.615 2.25 12 2.25S21.75 6.615 21.75 12 17.385 21.75 12 21.75z"/>
+                </svg>
+                Share on WhatsApp
+              </a>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
